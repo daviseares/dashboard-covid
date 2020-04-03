@@ -39,7 +39,7 @@ import {
 } from "variables/charts.jsx";
 //functions
 import dataGraphic from 'functions/dataGraphic';
-
+import getIconDimension from 'functions/getIconDimension'
 import 'leaflet/dist/leaflet.css';
 
 class Dashboard extends React.Component {
@@ -50,13 +50,64 @@ class Dashboard extends React.Component {
     })
 
     this.state = {
-      dataLine: null
+      dataLine: null,
+      points: [],
+      popup: false,
+      world: [{
+        properties: {
+          idpais: 196,
+          name: "World",
+          day: "3-04-2020",
+          confirmed: 1014296,
+          recovered: 0,
+          deaths: 52982,
+          pessimistic: 1327953,
+          optimistic: 868771,
+          estimate_cases: 1098362,
+          estimate_deaths: 57373
+        }
+      }]
     }
   }
 
   componentDidMount() {
-    this.getDataSelecionada();
+    //this.getDataSelecionada();
+    this.getExponencialTotal();
   }
+
+
+  getExponencialTotal() {
+    try {
+
+      this.api.get(`/exponential/total-atual`).then(async (result) => {
+        console.log('result:', result)
+        this.setState({
+          world: result.data.data.filter((value) => {
+            return value.properties.name === 'World'
+
+          })
+        })
+        console.log('Wordl', this.state.world)
+        this.setState({
+          points: result.data.data
+        })
+      })
+
+
+      //console.log(`/${selectedOption.value}/total-atual`, result[0]);
+
+
+      //getFilterData(result[0]);
+      //setActiveCase(result[0]);
+      //setPointslJson();
+
+
+
+    } catch (err) {
+      console.log("Erro GetExponencialTotalAtual", err)
+    }
+  }
+
 
   getDataSelecionada() {
     this.api.get('/exponential/data-selecionada', {
@@ -93,8 +144,8 @@ class Dashboard extends React.Component {
                     </Col>
                     <Col md="8" xs="7">
                       <div className="numbers">
-                        <p className="card-category">Capacity</p>
-                        <CardTitle tag="p">150GB</CardTitle>
+                        <p className="card-category">{this.state.world[0].properties.day}</p>
+                        <CardTitle tag="p">{this.state.world[0].properties.confirmed}</CardTitle>
                         <p />
                       </div>
                     </Col>
@@ -102,8 +153,8 @@ class Dashboard extends React.Component {
                 </CardBody>
                 <CardFooter>
                   <hr />
-                  <div className="stats">
-                    <i className="fas fa-sync-alt" /> Update Now
+                  <div>
+                    <b styles="backgroud-color:red;font-weight:800">Casos Confirmados </b>
                   </div>
                 </CardFooter>
               </Card>
@@ -114,13 +165,13 @@ class Dashboard extends React.Component {
                   <Row>
                     <Col md="4" xs="5">
                       <div className="icon-big text-center icon-warning">
-                        <i className="nc-icon nc-money-coins text-success" />
+                        <i className="nc-icon nc-money-coins text-info" />
                       </div>
                     </Col>
                     <Col md="8" xs="7">
                       <div className="numbers">
-                        <p className="card-category">Revenue</p>
-                        <CardTitle tag="p">$ 1,345</CardTitle>
+                        <p className="card-category">{this.state.world[0].properties.day}</p>
+                        <CardTitle tag="p">{this.state.world[0].properties.estimate_cases}</CardTitle>
                         <p />
                       </div>
                     </Col>
@@ -128,8 +179,8 @@ class Dashboard extends React.Component {
                 </CardBody>
                 <CardFooter>
                   <hr />
-                  <div className="stats">
-                    <i className="far fa-calendar" /> Last day
+                  <div>
+                    <b styles="backgroud-color:red;font-weight:800"> Casos Estimados </b>
                   </div>
                 </CardFooter>
               </Card>
@@ -145,8 +196,8 @@ class Dashboard extends React.Component {
                     </Col>
                     <Col md="8" xs="7">
                       <div className="numbers">
-                        <p className="card-category">Errors</p>
-                        <CardTitle tag="p">23</CardTitle>
+                        <p className="card-category">{this.state.world[0].properties.day}</p>
+                        <CardTitle tag="p">{this.state.world[0].properties.deaths}</CardTitle>
                         <p />
                       </div>
                     </Col>
@@ -154,8 +205,8 @@ class Dashboard extends React.Component {
                 </CardBody>
                 <CardFooter>
                   <hr />
-                  <div className="stats">
-                    <i className="far fa-clock" /> In the last hour
+                  <div>
+                    <b styles="backgroud-color:red;font-weight:800"> Mortes </b>
                   </div>
                 </CardFooter>
               </Card>
@@ -166,13 +217,13 @@ class Dashboard extends React.Component {
                   <Row>
                     <Col md="4" xs="5">
                       <div className="icon-big text-center icon-warning">
-                        <i className="nc-icon nc-favourite-28 text-primary" />
+                        <i className="nc-icon nc-favourite-28 text-secondary" />
                       </div>
                     </Col>
                     <Col md="8" xs="7">
                       <div className="numbers">
-                        <p className="card-category">Followers</p>
-                        <CardTitle tag="p">+45K</CardTitle>
+                        <p className="card-category">{this.state.world[0].properties.day}</p>
+                        <CardTitle tag="p">{this.state.world[0].properties.estimate_deaths}</CardTitle>
                         <p />
                       </div>
                     </Col>
@@ -180,8 +231,8 @@ class Dashboard extends React.Component {
                 </CardBody>
                 <CardFooter>
                   <hr />
-                  <div className="stats">
-                    <i className="fas fa-sync-alt" /> Update now
+                  <div>
+                    <b styles="backgroud-color:red;font-weight:800">Estimativa de Mortes</b>
                   </div>
                 </CardFooter>
               </Card>
@@ -205,11 +256,49 @@ class Dashboard extends React.Component {
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     />
+
+                    {(this.state.popup) && (
+                      <Popup
+                        position={[
+                          this.state.popup.geometry.coordinates[1],
+                          this.state.popup.geometry.coordinates[0]
+                        ]}
+                      >
+                        <div>
+                          <h3 className="txtPopup">{this.state.popup.properties.name} </h3>
+                          <p className="txtPopup">Data: <b>{this.state.popup.properties.day}</b></p>
+                          <p className="txtPopup">{this.state.popup.properties.region === "World" ? null : 'Região: ' + this.state.popup.properties.region}</p>
+                          <p className="colorYellow txtPopup">Confirmados: <b>{this.state.popup.properties.confirmed}</b></p>
+                          <p className="colorRed txtPopup">Mortes: <b>{this.state.popup.properties.deaths}</b></p>
+                          <p className="colorPurple txtPopup">Estimate de Casos: <b>{this.state.popup.properties.estimate_cases}</b></p>
+                          <p className="colorVine txtPopup">Estimativa de Mortes: <b>{this.state.popup.properties.estimate_deaths}</b></p>
+                          {/*  <p className="colorGreen"> Recuperados: <b>{activeCase.properties.Recovered}</b></p> */}
+                          {/*  <p className="colorRed">Mortes: <b>{activeCase.properties.Deaths}</b> </p> */}
+                        </div>
+                      </Popup>
+                    )}
+
+                    {this.state.points !== undefined && this.state.points != null ?
+                      this.state.points.map((value, index) => (
+                        value.properties.name !== 'World' ?
+                          <Marker
+                            onmouseover={() => this.setState({ popup: value })}
+                            onmouseout={() => this.setState({ popup: false })}
+                            icon={getIconDimension(value.properties.estimate_cases)}
+                            key={index}
+                            position={[value.geometry.coordinates[1], value.geometry.coordinates[0]]}
+                          //onclick={() => selectCountry(value)}
+                          />
+                          : null
+                      ))
+                      :
+                      null
+                    }
                   </Map>
                 </CardBody>
                 <CardFooter>
                   <hr />
-                  <div className="stats">
+                  <div className="stats" styles={{ color: "#000" }}>
                     <i className="fa fa-history" /> Updated 3 minutes ago
                   </div>
                 </CardFooter>
@@ -237,7 +326,7 @@ class Dashboard extends React.Component {
                     <i className="fa fa-circle text-gray" /> Unopened
                   </div>
                   <hr />
-                  <div className="stats">
+                  <div className="stats" styles={{ color: "#000" }}>
                     <i className="fa fa-calendar" /> Number of emails sent
                   </div>
                 </CardFooter>
