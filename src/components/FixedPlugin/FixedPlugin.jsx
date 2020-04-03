@@ -24,15 +24,15 @@ class FixedPlugin extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      classes: "dropdown show"
+      classes: "dropdown"
     };
     this.handleClick = this.handleClick.bind(this);
   }
   handleClick() {
-    if (this.state.classes === "dropdown") {
-      this.setState({ classes: "dropdown show" });
-    } else {
+    if (this.state.classes === "dropdown show") {
       this.setState({ classes: "dropdown" });
+    } else {
+      this.setState({ classes: "dropdown show" });
     }
   }
   render() {
@@ -42,7 +42,7 @@ class FixedPlugin extends Component {
           <div onClick={this.handleClick}>
             <i className="fa fa-cog fa-2x" />
           </div>
-          <ul className="dropdown-menu show">
+          <ul className="dropdown-menu show" style={{ height: 200,paddingTop:40}}>
             <li className="header-title">SIDEBAR BACKGROUND</li>
             <li className="adjustments-line">
               <div className="badge-colors text-center">
@@ -130,7 +130,7 @@ class FixedPlugin extends Component {
                 />
               </div>
             </li>
-            <li className="button-container">
+            {/*  <li className="button-container">
               <Button
                 href="https://www.creative-tim.com/product/paper-dashboard-react"
                 color="primary"
@@ -162,7 +162,7 @@ class FixedPlugin extends Component {
               >
                 Get pro version
               </Button>
-            </li>
+            </li> */}
           </ul>
         </div>
       </div>

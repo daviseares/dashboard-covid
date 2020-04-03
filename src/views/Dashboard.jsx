@@ -29,21 +29,28 @@ import {
   Row,
   Col
 } from "reactstrap";
+import axios from 'axios';
+import { Map, Marker, TileLayer, Popup } from "react-leaflet";
 // core components
 import {
   dashboard24HoursPerformanceChart,
   dashboardEmailStatisticsChart,
   dashboardNASDAQChart
 } from "variables/charts.jsx";
+//functions
+import dataGraphic from 'functions/dataGraphic';
 
-import api from 'service/api';
+import 'leaflet/dist/leaflet.css';
 
 class Dashboard extends React.Component {
   constructor(props) {
     super(props);
-    this.api = api;
-    this.state = {
+    this.api = axios.create({
+      baseURL: 'http://191.234.168.25:3000'
+    })
 
+    this.state = {
+      dataLine: null
     }
   }
 
@@ -52,17 +59,22 @@ class Dashboard extends React.Component {
   }
 
   getDataSelecionada() {
-    console.log("teste");
+    this.api.get('/exponential/data-selecionada', {
+      params: {
+        idpais: 196,
+        startDate: "2019-11-30",
+        endDate: "2020-04-10"
+      }
+    }).then(res => {
+      console.log(res);
+      var result = dataGraphic(res.data.data);
 
-    this.api.get('/exponencial/data-selecionada', {
-      idpais: 196,
-      startDate: "2019-11-30",
-      endDate: "2020-04-10",
-    }).then(response => {
-      console.log("DATA SELECIONADA RESPOSTA", response)
+      console.log(result)
+
+      this.setState({ dataLine: result })
+    }).catch(err => {
+      console.log(err);
     })
-
-
   }
 
   render() {
@@ -183,12 +195,17 @@ class Dashboard extends React.Component {
                   <p className="card-category">24 Hours performance</p>
                 </CardHeader>
                 <CardBody>
-                  <Line
-                    data={dashboard24HoursPerformanceChart.data}
-                    options={dashboard24HoursPerformanceChart.options}
-                    width={400}
-                    height={100}
-                  />
+                  <Map
+                    worldCopyJump={true}
+                    minZoom={2}
+                    center={[23.6746072, 11.1025824]}
+                    zoom={1.5}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                  </Map>
                 </CardBody>
                 <CardFooter>
                   <hr />
@@ -233,12 +250,17 @@ class Dashboard extends React.Component {
                   <p className="card-category">Line Chart with Points</p>
                 </CardHeader>
                 <CardBody>
-                  <Line
-                    data={dashboardNASDAQChart.data}
-                    options={dashboardNASDAQChart.options}
-                    width={400}
-                    height={100}
-                  />
+                  {
+                    this.state.dataLine ?
+                      <Line
+                        data={this.state.dataLine.data}
+                        options={this.state.dataLine.options}
+                        width={400}
+                        height={100}
+                      />
+                      : null
+                  }
+
                 </CardBody>
                 <CardFooter>
                   <div className="chart-legend">

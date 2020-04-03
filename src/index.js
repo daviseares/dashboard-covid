@@ -27,14 +27,16 @@ import "assets/demo/demo.css";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 
 import AdminLayout from "layouts/Admin.jsx";
+import User from "layouts/User.jsx";
 
 const hist = createBrowserHistory();
 
 ReactDOM.render(
   <Router history={hist}>
     <Switch>
-      <Route path="/admin" render={props => <AdminLayout {...props} />} />
-      <Redirect to="/admin/dashboard" />
+      {/*    <Route path="/admin" render={props => <AdminLayout {...props} />} /> */}
+      <Route path="/covid" render={props => <User {...props} />} />
+      <Redirect to="/covid/dashboard" />
     </Switch>
   </Router>,
   document.getElementById("root")
