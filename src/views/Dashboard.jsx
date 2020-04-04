@@ -29,18 +29,31 @@ import {
   Row,
   Col
 } from "reactstrap";
+// core components
 import axios from 'axios';
 import { Map, Marker, TileLayer, Popup } from "react-leaflet";
-// core components
-import {
-  dashboard24HoursPerformanceChart,
-  dashboardEmailStatisticsChart,
-  dashboardNASDAQChart
-} from "variables/charts.jsx";
+import { FiFrown, FiMeh } from 'react-icons/fi';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import moment from 'moment';
+import Select from 'react-select';
+import DateRangePicker from 'react-bootstrap-daterangepicker';
+import 'bootstrap/dist/css/bootstrap.css';
+// you will also need the css that comes with bootstrap-daterangepicker
+import 'bootstrap-daterangepicker/daterangepicker.css';
+
+
 //functions
 import dataGraphic from 'functions/dataGraphic';
 import getIconDimension from 'functions/getIconDimension'
 import 'leaflet/dist/leaflet.css';
+
+//constants importantes p/data
+const options = [{ value: 'exponential', label: 'Exponencial' },
+{ value: 'logistico', label: 'Logistico' }]
+const limitStartDate = new Date('2019', '10', '30');
+const outradata = new Date();
+const data = new Date();
+const limitFinalDate = data.setDate(outradata.getDate() + 7);
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -48,11 +61,21 @@ class Dashboard extends React.Component {
     this.api = axios.create({
       baseURL: 'http://191.234.168.25:3000'
     })
-
+    //this.locale = moment.defineLocale(ptBR);
     this.state = {
       dataLine: null,
       points: [],
       popup: false,
+      lastUpdate: null,
+      isVisible: false,
+      startDate: moment(limitStartDate).format('DD-MM-YYYY'),
+      endDate: moment(limitFinalDate).format('DD-MM-YYYY'),
+      option: { value: 'exponential', label: 'Exponencial' },
+      activeCase: {
+        properties: {
+          name: "World"
+        }
+      },
       world: [{
         properties: {
           idpais: 196,
@@ -72,60 +95,85 @@ class Dashboard extends React.Component {
 
   componentDidMount() {
     //this.getDataSelecionada();
-    this.getExponencialTotal();
+    this.getExponencialTotal(this.state.option);
   }
 
+  /**
+   * 
+   * @param {Object} valueOption | tipo exponencial ou logístico
+   */
+  getExponencialTotal(valueOption) {
+    if (this.state.option !== valueOption) {
+      this.setState({ option: valueOption })
+    }
 
-  getExponencialTotal() {
-    try {
+    this.api.get(`/${valueOption.value}/total-atual`).then(async (result) => {
+      console.log('result:', result)
 
-      this.api.get(`/exponential/total-atual`).then(async (result) => {
-        console.log('result:', result)
-        this.setState({
-          world: result.data.data.filter((value) => {
-            return value.properties.name === 'World'
+      var lastUp = new Date(result.data.lastUpdate)
 
-          })
-        })
-        console.log('Wordl', this.state.world)
-        this.setState({
-          points: result.data.data
-        })
+      this.setState({
+        points: result.data.data,
+        lastUpdate: moment(lastUp).format("DD-MM-YYYY HH:mm:ss"),
+        world: result.data.data.filter((value) => {
+          return value.properties.name === 'World'
+
+        }),
       })
 
+      var activeCase = result.data.data.filter((value) => {
+        return value.properties.name === this.state.activeCase.properties.name
 
-      //console.log(`/${selectedOption.value}/total-atual`, result[0]);
+      })
+      this.getDataSelecionada(activeCase[0], valueOption)
 
-
-      //getFilterData(result[0]);
-      //setActiveCase(result[0]);
-      //setPointslJson();
-
-
-
-    } catch (err) {
-      console.log("Erro GetExponencialTotalAtual", err)
-    }
+    }).catch(err => {
+      console.log('error-total-atual', err);
+    })
   }
 
-
-  getDataSelecionada() {
-    this.api.get('/exponential/data-selecionada', {
+  /**
+   * 
+   * @param {Object} value | pais ativo
+   * @param {Object} valueOption | modelo logístico ou exponencial
+   */
+  getDataSelecionada(value, valueOption) {
+    this.setState({ activeCase: value })
+    console.log(value)
+    this.api.get(`/${valueOption.value}/data-selecionada`, {
       params: {
-        idpais: 196,
+        idpais: value.properties.idpais,
         startDate: "2019-11-30",
         endDate: "2020-04-10"
       }
     }).then(res => {
-      console.log(res);
+      console.log("res----", res);
       var result = dataGraphic(res.data.data);
 
-      console.log(result)
+      console.log("data selecionada", result)
 
       this.setState({ dataLine: result })
     }).catch(err => {
       console.log(err);
     })
+  }
+
+  /**
+   * 
+   * @param {Object} value 
+   * @param {Object} dateRange 
+   */
+  applyData(value, dateRange) {
+    console.log(value, dateRange);
+    var sDate = moment(dateRange.startDate).format("DD-MM-YYYY");
+    var eDate = moment(dateRange.endDate).format("DD-MM-YYYY");
+
+    this.setState({ startDate: sDate, endDate: eDate })
+
+  }
+
+  toggleModal() {
+    this.setState({ isVisible: !this.state.isVisible })
   }
 
   render() {
@@ -165,7 +213,7 @@ class Dashboard extends React.Component {
                   <Row>
                     <Col md="4" xs="5">
                       <div className="icon-big text-center icon-warning">
-                        <i className="nc-icon nc-money-coins text-info" />
+                        <i className="nc-icon nc-globe text-info" />
                       </div>
                     </Col>
                     <Col md="8" xs="7">
@@ -191,7 +239,7 @@ class Dashboard extends React.Component {
                   <Row>
                     <Col md="4" xs="5">
                       <div className="icon-big text-center icon-warning">
-                        <i className="nc-icon nc-vector text-danger" />
+                        <FiFrown color="red" />
                       </div>
                     </Col>
                     <Col md="8" xs="7">
@@ -217,7 +265,7 @@ class Dashboard extends React.Component {
                   <Row>
                     <Col md="4" xs="5">
                       <div className="icon-big text-center icon-warning">
-                        <i className="nc-icon nc-favourite-28 text-secondary" />
+                        <FiMeh color="#b293f9" />
                       </div>
                     </Col>
                     <Col md="8" xs="7">
@@ -239,11 +287,20 @@ class Dashboard extends React.Component {
             </Col>
           </Row>
           <Row>
+            <Col className="text-center">
+              <h5>Monitoramento geográfico da projeçao da COVID-19 para os próximos 7 dias</h5>
+            </Col>
+          </Row>
+          <Row>
             <Col md="12">
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h5">Users Behavior</CardTitle>
-                  <p className="card-category">24 Hours performance</p>
+                  <CardTitle tag="h5">Mapa do Mundo</CardTitle>
+                  <p className="text-secondary">
+                    {(this.state.lastUpdate) &&
+                      "Última Atualização às " + this.state.lastUpdate
+                    }
+                  </p>
                 </CardHeader>
                 <CardBody>
                   <Map
@@ -279,15 +336,15 @@ class Dashboard extends React.Component {
                     )}
 
                     {this.state.points !== undefined && this.state.points != null ?
-                      this.state.points.map((value, index) => (
+                      this.state.points.map((value) => (
                         value.properties.name !== 'World' ?
                           <Marker
                             onmouseover={() => this.setState({ popup: value })}
                             onmouseout={() => this.setState({ popup: false })}
                             icon={getIconDimension(value.properties.estimate_cases)}
-                            key={index}
+                            key={value.properties.idpais}
                             position={[value.geometry.coordinates[1], value.geometry.coordinates[0]]}
-                          //onclick={() => selectCountry(value)}
+                            onclick={() => this.getDataSelecionada(value, this.state.option)}
                           />
                           : null
                       ))
@@ -297,10 +354,9 @@ class Dashboard extends React.Component {
                   </Map>
                 </CardBody>
                 <CardFooter>
-                  <hr />
-                  <div className="stats" styles={{ color: "#000" }}>
+                  {/* <div className="stats" styles={{ color: "#000" }}>
                     <i className="fa fa-history" /> Updated 3 minutes ago
-                  </div>
+                  </div> */}
                 </CardFooter>
               </Card>
             </Col>
@@ -309,25 +365,43 @@ class Dashboard extends React.Component {
             <Col md="4">
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h5">Email Statistics</CardTitle>
-                  <p className="card-category">Last Campaign Performance</p>
+                  <CardTitle tag="h5">Projeções</CardTitle>
+                  <p className="card-category">Selecione o modelo</p>
                 </CardHeader>
                 <CardBody>
-                  <Pie
-                    data={dashboardEmailStatisticsChart.data}
-                    options={dashboardEmailStatisticsChart.options}
+                  <Select
+                    id="select-type"
+                    placeholder="Selecione o modelo"
+                    onChange={(value) => this.getExponencialTotal(value)}
+                    options={options}
                   />
+                  <Row>
+                    <Col style={{ textAlign: "center", fontSize: 16, fontWeight: "600", color: "#555", marginTop: 20 }}>
+                      {this.state.startDate + " até " + this.state.endDate}
+                    </Col>
+                  </Row>
+                  <DateRangePicker
+                    locale={{
+                      cancelLabel: "Cancelar",
+                      format: "DD/MM/YYYY",
+                      applyLabel: "OK",
+                      monthNames: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+                      daysOfWeek: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"]
+                    }}
+                    minDate={limitStartDate}
+                    maxDate={limitFinalDate}
+                    startDate={this.state.startDate}
+                    endDate={this.state.endDate}
+                    onApply={(value, dateRange) => this.applyData(value, dateRange)}
+                    containerStyles={{ width: "100%", marginTop: 15 }}
+                  >
+                    <Button color="text-info" style={{ width: "100%" }}>Selecionar Data</Button>
+                  </DateRangePicker>
+                  <Button color="success" style={{ width: "100%", marginTop: 10 }}>buscar</Button>
                 </CardBody>
                 <CardFooter>
-                  <div className="legend">
-                    <i className="fa fa-circle text-primary" /> Opened{" "}
-                    <i className="fa fa-circle text-warning" /> Read{" "}
-                    <i className="fa fa-circle text-danger" /> Deleted{" "}
-                    <i className="fa fa-circle text-gray" /> Unopened
-                  </div>
-                  <hr />
-                  <div className="stats" styles={{ color: "#000" }}>
-                    <i className="fa fa-calendar" /> Number of emails sent
+                  <div className="stats">
+                    {/* <i className="fa fa-calendar" /> Number of emails sent */}
                   </div>
                 </CardFooter>
               </Card>
@@ -335,8 +409,8 @@ class Dashboard extends React.Component {
             <Col md="8">
               <Card className="card-chart">
                 <CardHeader>
-                  <CardTitle tag="h5">NASDAQ: AAPL</CardTitle>
-                  <p className="card-category">Line Chart with Points</p>
+                  <CardTitle tag="h5">{this.state.activeCase.properties.name}</CardTitle>
+                  <p className="card-category">Modelo {this.state.option.label}</p>
                 </CardHeader>
                 <CardBody>
                   {
@@ -345,25 +419,46 @@ class Dashboard extends React.Component {
                         data={this.state.dataLine.data}
                         options={this.state.dataLine.options}
                         width={400}
-                        height={100}
+                        height={150}
                       />
                       : null
                   }
 
                 </CardBody>
                 <CardFooter>
-                  <div className="chart-legend">
-                    <i className="fa fa-circle text-info" /> Tesla Model S{" "}
-                    <i className="fa fa-circle text-warning" /> BMW 5 Series
-                  </div>
-                  <hr />
-                  <div className="card-stats">
-                    <i className="fa fa-check" /> Data information certified
-                  </div>
+                  <Row className="chart-legend row">
+                    <Col lg="6" xs="12" className="text-center">
+                      <i className="fa fa-circle text-info" /> Casos Estimados&nbsp;&nbsp;&nbsp;{" "}
+                      <i className="fa fa-circle text-warning" /> Casos Confirmados
+                    </Col>
+                    <Col lg="6" xs="12" className="mt-3 text-center mt-lg-0">
+                      <Button style={{ backgroundColor: "#555" }}
+                        className="btn-sm ml-lg-5" onClick={() => this.toggleModal()}>
+                        expandir modal
+                      </Button>
+                    </Col>
+                  </Row>
                 </CardFooter>
               </Card>
             </Col>
           </Row>
+          <Modal isOpen={this.state.isVisible} toggle={() => this.toggleModal()} className="modal-dialog modal-xl">
+            <ModalHeader toggle={() => this.toggleModal()}>
+              {this.state.activeCase.properties.name} - Modelo {this.state.option.label}{" " + this.state.startDate + " até " + this.state.endDate}
+            </ModalHeader>
+            <ModalBody>
+              {
+                this.state.dataLine ?
+                  <Line
+                    data={this.state.dataLine.data}
+                    options={this.state.dataLine.options}
+                    width={"100%"}
+                    height={"40%"}
+                  />
+                  : null
+              }
+            </ModalBody>
+          </Modal>
         </div>
       </>
     );

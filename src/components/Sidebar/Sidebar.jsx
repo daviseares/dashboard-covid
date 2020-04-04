@@ -19,6 +19,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { Nav } from "reactstrap";
+import { FiColumns } from 'react-icons/fi';
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from "perfect-scrollbar";
 
@@ -62,14 +63,13 @@ class Sidebar extends React.Component {
             className="simple-text logo-mini"
           >
             <div className="logo-img">
-              <img src={logo} alt="react-logo" />
             </div>
           </a>
           <a
             href="https://www.creative-tim.com"
             className="simple-text logo-normal"
           >
-            COVID-19
+            <b>COVID-19 - PAINEL</b>
           </a>
         </div>
         <div className="sidebar-wrapper" ref={this.sidebar}>
@@ -88,8 +88,8 @@ class Sidebar extends React.Component {
                     className="nav-link"
                     activeClassName="active"
                   >
-                    <i className={prop.icon} />
-                    <p>{prop.name}</p>
+                    <p><FiColumns size={30} />
+                &nbsp;&nbsp;&nbsp; Monitoramento</p>
                   </NavLink>
                 </li>
               );

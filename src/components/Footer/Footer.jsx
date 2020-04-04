@@ -33,11 +33,11 @@ class Footer extends React.Component {
             <nav className="footer-nav">
               <ul>
                 <li>
-                  <a href="https://www.creative-tim.com" target="_blank">
-                    Creative Tim
+                  <a href="https://claytonfraga.github.io/covid19/" target="_blank">
+                    <b>mais informações visite nosso site</b>
                   </a>
                 </li>
-                <li>
+                {/*  <li>
                   <a href="https://blog.creative-tim.com" target="_blank">
                     Blog
                   </a>
@@ -49,13 +49,27 @@ class Footer extends React.Component {
                   >
                     Licenses
                   </a>
-                </li>
+                </li> */}
               </ul>
             </nav>
             <div className="credits ml-auto">
+
               <div className="copyright">
-                &copy; {1900 + new Date().getYear()}, made with{" "}
-                <i className="fa fa-heart heart" /> by Creative Tim
+                <a
+                  className="text-secondary"
+                  href="https://www.flaticon.com/free-icon/virus_2659980?term=virus&page=1&position=6"
+                  target="_blank"
+                >
+                  Flaticons&nbsp;
+                  </a>
+                &copy; {1900 + new Date().getYear()}, made&nbsp;
+                <a
+                  className="text-secondary"
+                  href="https://www.creative-tim.com/"
+                  target="_blank"
+                >
+                  by Creative Tim
+                  </a>
               </div>
             </div>
           </Row>

@@ -25,6 +25,7 @@ export default function dataGraphic(resposta) {
             labels: labelResp,
             datasets: [
                 {
+                    label:"Confirmados",
                     data: confirmed,
                     fill: false,
                     borderColor: "#fbc658",
@@ -35,6 +36,7 @@ export default function dataGraphic(resposta) {
                     pointBorderWidth: 2
                 },
                 {
+                    label: "Estimados",
                     data: estimateCases,
                     fill: false,
                     borderColor: "#51CACF",

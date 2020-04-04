@@ -87,7 +87,7 @@ class Header extends React.Component {
   updateColor() {
     if (window.innerWidth < 993 && this.state.isOpen) {
       this.setState({
-        color: "dark"
+        color: "dark" 
       });
     } else {
       this.setState({
@@ -122,7 +122,7 @@ class Header extends React.Component {
           this.props.location.pathname.indexOf("full-screen-maps") !== -1
             ? "navbar-absolute fixed-top"
             : "navbar-absolute fixed-top " +
-              (this.state.color === "transparent" ? "navbar-transparent " : "")
+            (this.state.color === "transparent" ? "navbar-transparent " : "")
         }
       >
         <Container fluid>
@@ -146,7 +146,7 @@ class Header extends React.Component {
             <span className="navbar-toggler-bar navbar-kebab" />
             <span className="navbar-toggler-bar navbar-kebab" />
           </NavbarToggler>
-          <Collapse
+          {/*   <Collapse
             isOpen={this.state.isOpen}
             navbar
             className="justify-content-end"
@@ -196,7 +196,7 @@ class Header extends React.Component {
                 </Link>
               </NavItem>
             </Nav>
-          </Collapse>
+          </Collapse> */}
         </Container>
       </Navbar>
     );
