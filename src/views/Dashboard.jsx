@@ -139,7 +139,12 @@ class Dashboard extends React.Component {
    */
   getDataSelecionada(value, valueOption) {
     this.setState({ activeCase: value })
-    console.log(value)
+
+    if (value.properties.name !== 'World' && this.state.popup === false) {
+      this.setState({ popup: value })
+    }
+
+
     this.api.get(`/${valueOption.value}/data-selecionada`, {
       params: {
         idpais: value.properties.idpais,
@@ -292,76 +297,6 @@ class Dashboard extends React.Component {
             </Col>
           </Row>
           <Row>
-            <Col md="12">
-              <Card>
-                <CardHeader>
-                  <CardTitle tag="h5">Mapa do Mundo</CardTitle>
-                  <p className="text-secondary">
-                    {(this.state.lastUpdate) &&
-                      "Última Atualização às " + this.state.lastUpdate
-                    }
-                  </p>
-                </CardHeader>
-                <CardBody>
-                  <Map
-                    worldCopyJump={true}
-                    minZoom={2}
-                    center={[23.6746072, 11.1025824]}
-                    zoom={1.5}
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                    />
-
-                    {(this.state.popup) && (
-                      <Popup
-                        position={[
-                          this.state.popup.geometry.coordinates[1],
-                          this.state.popup.geometry.coordinates[0]
-                        ]}
-                      >
-                        <div>
-                          <h3 className="txtPopup">{this.state.popup.properties.name} </h3>
-                          <p className="txtPopup">Data: <b>{this.state.popup.properties.day}</b></p>
-                          <p className="txtPopup">{this.state.popup.properties.region === "World" ? null : 'Região: ' + this.state.popup.properties.region}</p>
-                          <p className="colorYellow txtPopup">Confirmados: <b>{this.state.popup.properties.confirmed}</b></p>
-                          <p className="colorRed txtPopup">Mortes: <b>{this.state.popup.properties.deaths}</b></p>
-                          <p className="colorPurple txtPopup">Estimate de Casos: <b>{this.state.popup.properties.estimate_cases}</b></p>
-                          <p className="colorVine txtPopup">Estimativa de Mortes: <b>{this.state.popup.properties.estimate_deaths}</b></p>
-                          {/*  <p className="colorGreen"> Recuperados: <b>{activeCase.properties.Recovered}</b></p> */}
-                          {/*  <p className="colorRed">Mortes: <b>{activeCase.properties.Deaths}</b> </p> */}
-                        </div>
-                      </Popup>
-                    )}
-
-                    {this.state.points !== undefined && this.state.points != null ?
-                      this.state.points.map((value) => (
-                        value.properties.name !== 'World' ?
-                          <Marker
-                            onmouseover={() => this.setState({ popup: value })}
-                            onmouseout={() => this.setState({ popup: false })}
-                            icon={getIconDimension(value.properties.estimate_cases)}
-                            key={value.properties.idpais}
-                            position={[value.geometry.coordinates[1], value.geometry.coordinates[0]]}
-                            onclick={() => this.getDataSelecionada(value, this.state.option)}
-                          />
-                          : null
-                      ))
-                      :
-                      null
-                    }
-                  </Map>
-                </CardBody>
-                <CardFooter>
-                  {/* <div className="stats" styles={{ color: "#000" }}>
-                    <i className="fa fa-history" /> Updated 3 minutes ago
-                  </div> */}
-                </CardFooter>
-              </Card>
-            </Col>
-          </Row>
-          <Row>
             <Col md="4">
               <Card>
                 <CardHeader>
@@ -438,6 +373,75 @@ class Dashboard extends React.Component {
                       </Button>
                     </Col>
                   </Row>
+                </CardFooter>
+              </Card>
+            </Col>
+          </Row>
+          <Row>
+            <Col md="12">
+              <Card>
+                <CardHeader>
+                  <CardTitle tag="h5">Mapa do Mundo</CardTitle>
+                  <p className="text-secondary">
+                    {(this.state.lastUpdate) &&
+                      "Última Atualização às " + this.state.lastUpdate
+                    }
+                  </p>
+                </CardHeader>
+                <CardBody>
+                  <Map
+                    worldCopyJump={true}
+                    minZoom={2}
+                    center={[23.6746072, 11.1025824]}
+                    zoom={1.5}
+                  >
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                    />
+
+                    {(this.state.popup) && (
+                      <Popup
+                        position={[
+                          this.state.popup.geometry.coordinates[1],
+                          this.state.popup.geometry.coordinates[0]
+                        ]}
+                        onClose={() => this.setState({ popup: false })}
+                      >
+                        <h3 className="">{this.state.popup.properties.name} </h3>
+                        <p className="">Data: <b>{this.state.popup.properties.day}</b></p>
+                        <p className="">{this.state.popup.properties.region === "World" ? null : 'Região: ' + this.state.popup.properties.region}</p>
+                        <p className="colorYellow">Confirmados: <b>{(this.state.popup.properties.confirmed).toLocaleString('pt-BR')}</b></p>
+                        <p className="colorRed">Mortes: <b>{(this.state.popup.properties.deaths).toLocaleString('pt-BR')}</b></p>
+                        <p className="colorPurple">Estimate de Casos: <b>{(this.state.popup.properties.estimate_cases).toLocaleString('pt-BR')}</b></p>
+                        <p className="colorVine">Estimativa de Mortes: <b>{(this.state.popup.properties.estimate_deaths).toLocaleString('pt-BR')}</b></p>
+                        {/*  <p className="colorGreen"> Recuperados: <b>{activeCase.properties.Recovered}</b></p> */}
+                        {/*  <p className="colorRed">Mortes: <b>{activeCase.properties.Deaths}</b> </p> */}
+                      </Popup>
+                    )}
+
+                    {this.state.points !== undefined && this.state.points != null ?
+                      this.state.points.map((value) => (
+                        value.properties.name !== 'World' ?
+                          <Marker
+                            onmouseover={() => this.setState({ popup: value })}
+                            onmouseout={() => this.setState({ popup: false })}
+                            icon={getIconDimension(value.properties.estimate_cases)}
+                            key={value.properties.idpais}
+                            position={[value.geometry.coordinates[1], value.geometry.coordinates[0]]}
+                            onclick={() => this.getDataSelecionada(value, this.state.option)}
+                          />
+                          : null
+                      ))
+                      :
+                      null
+                    }
+                  </Map>
+                </CardBody>
+                <CardFooter>
+                  {/* <div className="stats" styles={{ color: "#000" }}>
+                    <i className="fa fa-history" /> Updated 3 minutes ago
+                  </div> */}
                 </CardFooter>
               </Card>
             </Col>
