@@ -27,11 +27,11 @@ import UpgradeToPro from "views/Upgrade.jsx";
 
 var routes = [
   {
-    path: "/dashboard",
+    path: "/",
     name: "Monitoramento",
     icon: "nc-icon nc-bank",
     component: Dashboard,
-    layout: "/covid"
+    layout: "/"
   },
   /* {
     path: "/icons",

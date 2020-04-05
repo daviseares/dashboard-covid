@@ -59,7 +59,7 @@ class Dashboard extends React.Component {
   constructor(props) {
     super(props);
     this.api = axios.create({
-      baseURL: 'http://191.234.168.25:3000'
+      baseURL: process.env.REACT_APP_API_URL
     })
     //this.locale = moment.defineLocale(ptBR);
     this.state = {
@@ -193,7 +193,7 @@ class Dashboard extends React.Component {
                     <Col md="8" xs="7">
                       <div className="numbers">
                         <p className="card-category">{this.state.world[0].properties.day}</p>
-                        <CardTitle tag="p">{this.state.world[0].properties.confirmed}</CardTitle>
+                        <CardTitle tag="p">{(this.state.world[0].properties.confirmed).toLocaleString('pt-BR')}</CardTitle>
                         <p />
                       </div>
                     </Col>
@@ -219,7 +219,7 @@ class Dashboard extends React.Component {
                     <Col md="8" xs="7">
                       <div className="numbers">
                         <p className="card-category">{this.state.world[0].properties.day}</p>
-                        <CardTitle tag="p">{this.state.world[0].properties.estimate_cases}</CardTitle>
+                        <CardTitle tag="p">{(this.state.world[0].properties.estimate_cases).toLocaleString('pt-BR')}</CardTitle>
                         <p />
                       </div>
                     </Col>
@@ -245,7 +245,7 @@ class Dashboard extends React.Component {
                     <Col md="8" xs="7">
                       <div className="numbers">
                         <p className="card-category">{this.state.world[0].properties.day}</p>
-                        <CardTitle tag="p">{this.state.world[0].properties.deaths}</CardTitle>
+                        <CardTitle tag="p">{(this.state.world[0].properties.deaths).toLocaleString('pt-BR')}</CardTitle>
                         <p />
                       </div>
                     </Col>
@@ -271,7 +271,7 @@ class Dashboard extends React.Component {
                     <Col md="8" xs="7">
                       <div className="numbers">
                         <p className="card-category">{this.state.world[0].properties.day}</p>
-                        <CardTitle tag="p">{this.state.world[0].properties.estimate_deaths}</CardTitle>
+                        <CardTitle tag="p">{(this.state.world[0].properties.estimate_deaths).toLocaleString('pt-BR')}</CardTitle>
                         <p />
                       </div>
                     </Col>
